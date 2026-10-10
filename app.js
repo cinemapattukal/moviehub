@@ -1,5 +1,7 @@
 
-const API = "https://restless-block-eb74.cinemapattukal.workers.dev/api";
+
+const API = "https://restless-block-eb74.cinemapattukal.workers.dev";
+
 const IMAGE = "https://image.tmdb.org/t/p/w500";
 
 const grid = document.getElementById("grid");
