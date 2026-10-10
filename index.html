@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>MovieHub — Discover Movies & TV</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo" href="./">Movie<span>Hub</span></a>
+    <nav>
+      <a href="#movies">Movies</a>
+      <a href="#series">TV Series</a>
+      <a href="#people">People</a>
+    </nav>
+    <input id="search" type="search"
+      placeholder="Search movies, series...">
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">YOUR ENTERTAINMENT DATABASE</p>
+      <h1>Discover your next<br>favourite story.</h1>
+      <p>Explore movies, TV series and the people behind them.</p>
+      <a class="explore" href="#movies">Explore Movies ↓</a>
+    </section>
+
+    <section class="section" id="movies">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">EXPLORE THE COLLECTION</p>
+          <h2>Popular Movies</h2>
+        </div>
+        <select id="category">
+          <option value="all">All titles</option>
+          <option value="movie">Movies</option>
+          <option value="tv">TV Series</option>
+        </select>
+      </div>
+      <div id="status" role="status"></div>
+      <div id="grid" class="grid"></div>
+    </section>
+
+    <section class="section people" id="people">
+      <h2>Discover Actors</h2>
+      <p>Explore cast and crew profiles as the database grows.</p>
+    </section>
+  </main>
+
+  <footer>
+    <a class="logo" href="./">Movie<span>Hub</span></a>
+    <p>Movie information and images powered by TMDB.</p>
+    <p class="disclaimer">
+      This product uses the TMDB API but is not endorsed or
+      certified by TMDB.
+    </p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
