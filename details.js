@@ -1,112 +1,247 @@
+
 "use strict";
+
 const API = "https://restless-block-eb74.cinemapattukal.workers.dev";
 const IMG = "https://image.tmdb.org/t/p/";
+
 const params = new URLSearchParams(location.search);
 const id = params.get("id");
 const type = params.get("type") === "tv" ? "tv" : "movie";
+
 const status = document.getElementById("detail-status");
 const root = document.getElementById("detail-content");
 
-const img = (path, size = "w500") => path ? IMG + size + path : "";
-const node = (tag, cls, text) => {
-  const n = document.createElement(tag);
-  if (cls) n.className = cls;
-  if (text !== undefined) n.textContent = text;
-  return n;
-};
+function imageURL(path, size = "w500") {
+  return path ? IMG + size + path : "";
+}
+
+function makeElement(tag, className = "", text = "") {
+  const element = document.createElement(tag);
+
+  if (className) element.className = className;
+  if (text !== undefined && text !== null) {
+    element.textContent = text;
+  }
+
+  return element;
+}
+
 async function getJSON(url) {
-  const r = await fetch(url);
-  if (!r.ok) throw new Error("HTTP " + r.status);
-  const d = await r.json();
-  if (d.error) throw new Error(d.error);
-  return d;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error("HTTP " + response.status);
+  }
+
+  const data = await response.json();
+
+  if (data.error) {
+    throw new Error(data.error);
+  }
+
+  return data;
 }
-function row(label, value) {
+
+function detailRow(label, value) {
   if (!value) return null;
-  const p = node("p", "detail-meta");
-  const b = node("strong", "", label + ": ");
-  p.append(b, document.createTextNode(String(value)));
-  return p;
+
+  const row = makeElement("p", "detail-meta");
+  const strong = makeElement("strong", "", label + ": ");
+
+  row.append(strong, document.createTextNode(String(value)));
+
+  return row;
 }
-async function init() {
+
+/* Load movie or TV details */
+async function initDetails() {
   if (!id || !/^\d+$/.test(id)) {
-    status.textContent = "Invalid title ID.";
+    status.textContent = "Invalid movie or TV series ID.";
     return;
   }
+
   try {
     const base = `/api/${type === "tv" ? "tv" : "movies"}/${encodeURIComponent(id)}`;
+
+    const detailsURL = API + base + "?language=en-US";
+    const creditsURL = API + base + "/credits?language=en-US";
+
     const [data, credits] = await Promise.all([
-      getJSON(API + base + "?language=en-US"),
-      getJSON(API + base + "/credits?language=en-US").catch(() => ({cast:[], crew:[]}))
+      getJSON(detailsURL),
+      getJSON(creditsURL)
     ]);
-    document.title = `${data.title || data.name || "Details"} — MovieHub`;
+
+    console.log("MovieHub credits:", credits);
+    console.log("MovieHub crew:", credits.crew);
+
     status.textContent = "";
     root.replaceChildren();
 
-    const hero = node("section", "detail-hero");
-    if (data.backdrop_path) hero.style.backgroundImage =
-      `linear-gradient(90deg,rgba(9,14,23,.96),rgba(9,14,23,.72),rgba(9,14,23,.4)),url("${img(data.backdrop_path,"w1280")}")`;
+    const title = data.title || data.name || "Untitled";
+    document.title = title + " — MovieHub";
 
-    const layout = node("div", "detail-layout");
+    /* Hero section */
+    const hero = makeElement("section", "detail-hero");
+
+    if (data.backdrop_path) {
+      hero.style.backgroundImage =
+        `linear-gradient(90deg, rgba(9,14,23,.96), rgba(9,14,23,.70), rgba(9,14,23,.35)), url("${imageURL(data.backdrop_path, "w1280")}")`;
+    }
+
+    const layout = makeElement("div", "detail-layout");
+
     if (data.poster_path) {
-      const poster = node("img", "detail-poster");
-      poster.src = img(data.poster_path);
-      poster.alt = (data.title || data.name || "Title") + " poster";
+      const poster = makeElement("img", "detail-poster");
+      poster.src = imageURL(data.poster_path);
+      poster.alt = title + " poster";
+      poster.loading = "lazy";
       layout.appendChild(poster);
     }
 
-    const info = node("div", "detail-info");
+    const info = makeElement("div", "detail-info");
+
     info.append(
-      node("span", "detail-kicker", type === "tv" ? "TV SERIES" : "MOVIE"),
-      node("h1", "detail-title", data.title || data.name || "Untitled")
+      makeElement("span", "detail-kicker", type === "tv" ? "TV SERIES" : "MOVIE"),
+      makeElement("h1", "detail-title", title)
     );
-    const genres = (data.genres || []).map(x => x.name).join(" · ");
+
     const rating = Number(data.vote_average || 0);
-    const runtime = data.runtime ? `${data.runtime} min` :
-      (data.episode_run_time && data.episode_run_time[0] ? `${data.episode_run_time[0]} min/episode` : "");
-    [row("Release", data.release_date || data.first_air_date),
-     row("Rating", rating ? `★ ${rating.toFixed(1)}/10` : ""),
-     row("Genres", genres), row("Runtime", runtime),
-     row("Status", data.status),
-     row("Language", data.original_language ? data.original_language.toUpperCase() : "")]
-      .filter(Boolean).forEach(x => info.appendChild(x));
-    info.append(node("h2", "detail-subtitle", "Overview"),
-      node("p", "detail-overview", data.overview || "No overview available."));
+    const genres = (data.genres || []).map(g => g.name).join(" · ");
+
+    const runtime = data.runtime
+      ? data.runtime + " minutes"
+      : data.episode_run_time && data.episode_run_time.length
+        ? data.episode_run_time[0] + " minutes per episode"
+        : "";
+
+    [
+      detailRow("Release", data.release_date || data.first_air_date),
+      detailRow("Rating", rating ? "★ " + rating.toFixed(1) + "/10" : ""),
+      detailRow("Genres", genres),
+      detailRow("Runtime", runtime),
+      detailRow("Status", data.status),
+      detailRow("Language", data.original_language
+        ? data.original_language.toUpperCase()
+        : "")
+    ].filter(Boolean).forEach(row => info.appendChild(row));
+
+    info.append(
+      makeElement("h2", "detail-subtitle", "Overview"),
+      makeElement("p", "detail-overview", data.overview || "No overview available.")
+    );
+
     layout.appendChild(info);
     hero.appendChild(layout);
     root.appendChild(hero);
 
-    const cast = credits.cast || [];
+    /* Cast section */
+    const cast = Array.isArray(credits.cast) ? credits.cast : [];
+
+    root.appendChild(makeElement("h2", "content-heading", "Cast"));
+
     if (cast.length) {
-      root.appendChild(node("h2", "content-heading", "Cast"));
-      const list = node("div", "cast-grid");
-      cast.slice(0, 20).forEach(person => {
-        const card = node("article", "cast-card");
+      const castGrid = makeElement("div", "cast-grid");
+
+      cast.slice(0, 24).forEach(person => {
+        const card = makeElement("article", "cast-card");
+
         if (person.profile_path) {
-          const photo = node("img", "cast-photo");
-          photo.src = img(person.profile_path, "w185");
-          photo.alt = person.name || "Cast";
+          const photo = makeElement("img", "cast-photo");
+          photo.src = imageURL(person.profile_path, "w185");
+          photo.alt = person.name || "Cast member";
           photo.loading = "lazy";
           card.appendChild(photo);
-        } else card.appendChild(node("div", "cast-photo cast-placeholder", "No image"));
-        card.append(node("strong", "", person.name || "Unknown"),
-          node("span", "", person.character || ""));
-        card.addEventListener("click", () => location.href = `person.html?id=${encodeURIComponent(person.id)}`);
-        list.appendChild(card);
+        } else {
+          card.appendChild(
+            makeElement("div", "cast-photo cast-placeholder", "No image")
+          );
+        }
+
+        card.append(
+          makeElement("strong", "", person.name || "Unknown"),
+          makeElement("span", "", person.character || "")
+        );
+
+        card.style.cursor = "pointer";
+        card.addEventListener("click", () => {
+          location.href = "person.html?id=" + encodeURIComponent(person.id);
+        });
+
+        castGrid.appendChild(card);
       });
-      root.appendChild(list);
+
+      root.appendChild(castGrid);
+    } else {
+      root.appendChild(
+        makeElement("p", "crew-line", "Cast information is not available.")
+      );
     }
 
-    const crew = (credits.crew || []).filter(x =>
-      ["Director", "Writer", "Screenplay", "Creator"].includes(x.job));
+    /* Crew section: include every crew member returned by TMDB */
+    const crew = Array.isArray(credits.crew) ? credits.crew : [];
+
+    root.appendChild(makeElement("h2", "content-heading", "Crew"));
+
     if (crew.length) {
-      root.appendChild(node("h2", "content-heading", "Crew"));
-      root.appendChild(node("p", "crew-line",
-        crew.slice(0, 12).map(x => `${x.name} (${x.job})`).join(" · ")));
+      const crewGrid = makeElement("div", "crew-grid");
+
+      /* Prioritize key jobs, then show remaining crew */
+      const priority = [
+        "Director",
+        "Writer",
+        "Screenplay",
+        "Story",
+        "Creator",
+        "Executive Producer",
+        "Producer",
+        "Original Music Composer",
+        "Director of Photography",
+        "Editor"
+      ];
+
+      const sortedCrew = [...crew].sort((a, b) => {
+        const aIndex = priority.indexOf(a.job);
+        const bIndex = priority.indexOf(b.job);
+
+        const aRank = aIndex === -1 ? 999 : aIndex;
+        const bRank = bIndex === -1 ? 999 : bIndex;
+
+        return aRank - bRank;
+      });
+
+      sortedCrew.forEach(person => {
+        const card = makeElement("article", "crew-card");
+
+        card.append(
+          makeElement("strong", "", person.name || "Unknown"),
+          makeElement(
+            "span",
+            "",
+            person.job || person.department || "Crew"
+          )
+        );
+
+        crewGrid.appendChild(card);
+      });
+
+      root.appendChild(crewGrid);
+    } else {
+      root.appendChild(
+        makeElement(
+          "p",
+          "crew-line",
+          "TMDB has not provided crew information for this title."
+        )
+      );
     }
-  } catch (e) {
-    console.error(e);
-    status.textContent = "Details could not load: " + e.message;
+
+  } catch (error) {
+    console.error("MovieHub details error:", error);
+
+    status.textContent =
+      "Could not load details: " + error.message +
+      ". Please check the Cloudflare Worker.";
   }
 }
-init();
+
+initDetails();
