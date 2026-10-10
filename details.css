@@ -1,0 +1,177 @@
+
+/* MovieHub Details Page */
+
+.detail-page {
+  min-height: 60vh;
+  padding: 24px 5% 50px;
+}
+
+.back-link {
+  display: inline-block;
+  margin-bottom: 20px;
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.detail-hero {
+  padding: 32px;
+  border: 1px solid #283244;
+  border-radius: 16px;
+  background-color: #151e2c;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.detail-layout {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.detail-poster {
+  width: 230px;
+  max-width: 30%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.detail-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-kicker {
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.detail-title {
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 1.12;
+  margin: 10px 0 18px;
+}
+
+.detail-meta {
+  color: #c4ccda;
+  line-height: 1.6;
+  margin: 7px 0;
+  font-size: 14px;
+}
+
+.detail-subtitle,
+.content-heading {
+  margin: 24px 0 12px;
+}
+
+.detail-overview {
+  color: #c4ccda;
+  line-height: 1.8;
+}
+
+.cast-grid,
+.crew-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.cast-card,
+.crew-card {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cast-card {
+  cursor: pointer;
+}
+
+.cast-photo {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: 9px;
+  background: #202b3c;
+}
+
+.cast-card strong,
+.crew-card strong {
+  color: #fff;
+  font-size: 13px;
+}
+
+.cast-card span,
+.crew-card span {
+  color: #a5b0c2;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.cast-placeholder {
+  display: grid;
+  place-items: center;
+  color: #a5b0c2;
+}
+
+.crew-card {
+  padding: 12px;
+  border: 1px solid #283244;
+  border-radius: 8px;
+  background: #151e2c;
+}
+
+.crew-line {
+  color: #c4ccda;
+  line-height: 1.8;
+}
+
+@media (max-width: 700px) {
+  .detail-page {
+    padding: 18px 4% 36px;
+  }
+
+  .detail-hero {
+    padding: 18px;
+  }
+
+  .detail-layout {
+    gap: 14px;
+  }
+
+  .detail-poster {
+    width: 120px;
+    max-width: 36%;
+  }
+
+  .detail-title {
+    font-size: 25px;
+    margin: 8px 0 12px;
+  }
+
+  .detail-meta {
+    font-size: 12px;
+    margin: 5px 0;
+  }
+
+  .detail-overview {
+    font-size: 14px;
+  }
+
+  .cast-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .crew-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
