@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101827">
+  <title>Movie Details — MovieHub</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="details.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo" href="./">Movie<span>Hub</span></a>
+    <nav><a href="./">Home</a><a href="./#movies">Movies</a><a href="./#people">People</a></nav>
+  </header>
+  <main class="detail-page">
+    <a class="back-link" href="./">← Back to MovieHub</a>
+    <div id="detail-status" role="status">Loading details...</div>
+    <div id="detail-content"></div>
+  </main>
+  <footer>
+    <a class="logo" href="./">Movie<span>Hub</span></a>
+    <p>Movie information and images powered by TMDB.</p>
+    <p class="disclaimer">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+  </footer>
+  <script src="details.js"></script>
+</body>
+</html>
