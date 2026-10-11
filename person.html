@@ -5,24 +5,88 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#101827">
   <title>Actor Profile — MovieHub</title>
+
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="details.css">
+
+  <style>
+    /* Known For horizontal slider */
+    .known-for-slider {
+      display: flex !important;
+      flex-wrap: nowrap !important;
+      gap: 12px;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: auto !important;
+      overflow-y: hidden;
+      padding: 4px 2px 12px;
+      scroll-snap-type: x proximity;
+      scroll-behavior: smooth;
+      scrollbar-width: thin;
+      overscroll-behavior-x: contain;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .known-for-slider > * {
+      flex: 0 0 108px;
+      width: 108px;
+      min-width: 108px;
+      scroll-snap-align: start;
+    }
+
+    .known-for-slider img {
+      max-width: 100%;
+    }
+
+    @media (min-width: 768px) {
+      .known-for-slider > * {
+        flex-basis: 140px;
+        width: 140px;
+        min-width: 140px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .known-for-slider {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
 </head>
+
 <body>
   <header class="topbar">
     <a class="logo" href="./">Movie<span>Hub</span></a>
-    <nav><a href="./">Home</a><a href="./#movies">Movies</a><a href="./#people">People</a></nav>
+
+    <nav>
+      <a href="./">Home</a>
+      <a href="./#movies">Movies</a>
+      <a href="./#people">People</a>
+    </nav>
   </header>
+
   <main class="detail-page">
-    <a class="back-link" href="./#people">← Back to MovieHub</a>
-    <div id="person-status" role="status">Loading actor profile...</div>
+    <a class="back-link" href="./#people">
+      ← Back to MovieHub
+    </a>
+
+    <div id="person-status" role="status">
+      Loading actor profile...
+    </div>
+
     <div id="person-content"></div>
   </main>
+
   <footer>
     <a class="logo" href="./">Movie<span>Hub</span></a>
+
     <p>Movie information and images powered by TMDB.</p>
-    <p class="disclaimer">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+
+    <p class="disclaimer">
+      This product uses the TMDB API but is not endorsed or certified by TMDB.
+    </p>
   </footer>
+
   <script src="person.js"></script>
 </body>
 </html>
