@@ -77,6 +77,11 @@ select { background: var(--panel); color: white;
 .movie:hover .poster { outline: 2px solid var(--accent); }
 #status { color: var(--muted); margin-bottom: 12px; }
 .people { background: #151d2a; }
+.actors-status { color: var(--muted); margin: 14px 0; font-size: 14px; }
+.actors-grid { margin-top: 20px; }
+.actor-card { cursor: pointer; }
+.actor-poster { aspect-ratio: 2 / 3; object-fit: cover; }
+.poster-missing { background: var(--panel); }
 footer { padding: 30px 5%; border-top: 1px solid #283244; }
 footer p { font-size: 12px; line-height: 1.6; }
 .disclaimer { max-width: 700px; }
