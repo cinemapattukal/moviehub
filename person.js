@@ -501,17 +501,85 @@ async function init() {
         }
 
         @media (max-width: 767px) {
-          .person-hero {
-            display: flex !important;
-            flex-direction: column !important;
-            align-items: stretch !important;
-            gap: 18px !important;
-          }
+  .person-hero {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 18px !important;
+  }
 
-          .person-sidebar,
-          .person-main-column {
-            display: contents !important;
-          }
+  .person-sidebar,
+  .person-main-column {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .person-sidebar {
+    order: 1;
+  }
+
+  .person-large-photo {
+    display: block;
+    width: min(82%, 320px) !important;
+    height: auto !important;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    margin: 0 auto !important;
+    border-radius: 12px;
+  }
+
+  .person-personal-info {
+    order: 3;
+    margin-top: 30px;
+  }
+
+  .person-main-column {
+    order: 2;
+  }
+
+  .person-bio {
+    order: 1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .person-bio > .detail-kicker {
+    display: none;
+  }
+
+  .person-profile-name {
+    text-align: center;
+    font-size: clamp(30px, 8vw, 44px) !important;
+    line-height: 1.12;
+    margin: 0 0 20px !important;
+    overflow-wrap: anywhere;
+  }
+
+  .person-biography-section {
+    margin-top: 30px;
+  }
+
+  .person-info-heading {
+    font-size: 28px;
+    margin-bottom: 18px;
+  }
+
+  .person-info-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px 18px;
+  }
+
+  .person-info-label {
+    font-size: 17px;
+  }
+
+  .person-info-value {
+    font-size: 16px;
+    line-height: 1.45;
+  }
+
 
           .person-large-photo {
             display: block;
