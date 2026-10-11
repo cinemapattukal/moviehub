@@ -12,6 +12,10 @@
   <header class="topbar">
     <a class="logo" href="./">Movie<span>Hub</span></a>
     <nav><a href="./">Home</a><a href="./#movies">Movies</a><a href="./#people">People</a></nav>
+    <div class="global-search-wrap">
+      <input id="global-search" type="search" placeholder="Search movies, series, people..." autocomplete="off" aria-label="Search movies, series and people">
+      <div id="global-search-results" class="global-search-results" role="listbox" hidden></div>
+    </div>
   </header>
   <main class="detail-page">
     <a class="back-link" href="./">← Back to MovieHub</a>
@@ -23,6 +27,7 @@
     <p>Movie information and images powered by TMDB.</p>
     <p class="disclaimer">This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
   </footer>
+  <script src="global-search.js"></script>
   <script src="details.js"></script>
 </body>
 </html>
