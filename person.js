@@ -67,7 +67,8 @@ function uniqueCredits(items) {
       item.media_type ||
       (item.first_air_date ? "tv" : "movie");
 
-    const key = `${type}-${item.id}-${item.job || item.character || ""}`;
+    const key =
+      `${type}-${item.id}-${item.job || item.character || ""}`;
 
     if (seen.has(key)) return false;
 
@@ -208,40 +209,79 @@ async function init() {
 
     bio.append(
       el("span", "detail-kicker", "PERSON PROFILE"),
-      el("h1", "detail-title", person.name || "Unknown")
+      el(
+        "h1",
+        "detail-title person-profile-name",
+        person.name || "Unknown"
+      )
     );
 
-    if (person.known_for_department) {
-      bio.appendChild(
-        el(
-          "p",
-          "detail-meta",
-          "Department: " + person.known_for_department
-        )
-      );
-    }
+    // PERSONAL INFO
+    const personalInfo = el("section", "person-personal-info");
 
-    if (person.birthday) {
-      bio.appendChild(
-        el(
-          "p",
-          "detail-meta",
-          "Born: " +
-            person.birthday +
-            (person.place_of_birth
-              ? " · " + person.place_of_birth
-              : "")
-        )
+    personalInfo.appendChild(
+      el("h2", "person-info-heading", "Personal Info")
+    );
+
+    const infoGrid = el("div", "person-info-grid");
+
+    const addInfo = (label, value, extraClass = "") => {
+      if (
+        value === undefined ||
+        value === null ||
+        String(value).trim() === ""
+      ) {
+        return;
+      }
+
+      const item = el(
+        "div",
+        "person-info-item" +
+          (extraClass ? " " + extraClass : "")
       );
-    }
+
+      item.append(
+        el("strong", "person-info-label", label),
+        el("span", "person-info-value", value)
+      );
+
+      infoGrid.appendChild(item);
+    };
+
+    const stageName =
+      Array.isArray(person.also_known_as) &&
+      person.also_known_as.length
+        ? person.also_known_as.slice(0, 2).join(", ")
+        : "";
+
+    addInfo("Stage Name", stageName);
+    addInfo("Known For", person.known_for_department || "—");
+    addInfo(
+      "Known Credits",
+      String(uniqueCredits([...allCast, ...allCrew]).length)
+    );
+    addInfo(
+      "Gender",
+      ({ 1: "Female", 2: "Male", 3: "Non-binary" })[
+        person.gender
+      ] || "—"
+    );
+    addInfo("Birthday", person.birthday || "—");
+    addInfo(
+      "Place of Birth",
+      person.place_of_birth || "—",
+      "person-info-wide"
+    );
 
     if (person.deathday) {
-      bio.appendChild(
-        el("p", "detail-meta", "Died: " + person.deathday)
-      );
+      addInfo("Deathday", person.deathday, "person-info-wide");
     }
 
-    bio.append(
+    personalInfo.appendChild(infoGrid);
+
+    const biography = el("section", "person-biography-section");
+
+    biography.append(
       el("h2", "detail-subtitle", "Biography"),
       el(
         "p",
@@ -250,8 +290,123 @@ async function init() {
       )
     );
 
+    bio.appendChild(personalInfo);
+    bio.appendChild(biography);
+
     profile.appendChild(bio);
     root.appendChild(profile);
+
+    // PHONE PROFILE STYLING
+    // Desktop styling remains unchanged.
+    if (!document.getElementById("person-mobile-profile-styles")) {
+      const mobileStyles = el("style");
+
+      mobileStyles.id = "person-mobile-profile-styles";
+
+      mobileStyles.textContent = `
+        .person-personal-info {
+          margin-top: 28px;
+        }
+
+        .person-info-heading {
+          margin: 0 0 16px;
+        }
+
+        .person-info-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 18px 22px;
+        }
+
+        .person-info-item {
+          display: flex;
+          flex-direction: column;
+          gap: 7px;
+          min-width: 0;
+        }
+
+        .person-info-label {
+          font-weight: 700;
+        }
+
+        .person-info-value {
+          overflow-wrap: anywhere;
+        }
+
+        .person-info-wide {
+          grid-column: 1 / -1;
+        }
+
+        .person-biography-section {
+          margin-top: 26px;
+        }
+
+        @media (max-width: 767px) {
+          .person-hero {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 18px !important;
+          }
+
+          .person-large-photo {
+            display: block;
+            width: min(82%, 320px) !important;
+            height: auto !important;
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            margin: 0 auto !important;
+            border-radius: 12px;
+          }
+
+          .person-bio {
+            width: 100%;
+            min-width: 0;
+          }
+
+          .person-bio > .detail-kicker {
+            display: none;
+          }
+
+          .person-profile-name {
+            text-align: center;
+            font-size: clamp(30px, 8vw, 44px) !important;
+            line-height: 1.12;
+            margin: 0 0 20px !important;
+            overflow-wrap: anywhere;
+          }
+
+          .person-personal-info {
+            margin-top: 30px;
+          }
+
+          .person-info-heading {
+            font-size: 28px;
+            margin-bottom: 18px;
+          }
+
+          .person-info-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px 18px;
+          }
+
+          .person-info-label {
+            font-size: 17px;
+          }
+
+          .person-info-value {
+            font-size: 16px;
+            line-height: 1.45;
+          }
+
+          .person-biography-section {
+            margin-top: 30px;
+          }
+        }
+      `;
+
+      document.head.appendChild(mobileStyles);
+    }
 
     // KNOWN FOR
     const allKnown = uniqueCredits([
@@ -267,7 +422,7 @@ async function init() {
 
     addCredits("Known For", knownFor, "known");
 
-    // SPLIT MOVIES AND TV SERIES
+    // MOVIES AND TV SERIES
     const movieCast = sortByDate(
       allCast.filter(item => item.media_type === "movie")
     );
@@ -279,7 +434,7 @@ async function init() {
     addCredits("Movies", movieCast, "cast");
     addCredits("TV Series", tvCast, "cast");
 
-    // CREW WORK: SPLIT BY MEDIA TYPE
+    // CREW WORK
     const crewJobs = [
       "Director",
       "Writer",
@@ -356,11 +511,12 @@ function addCredits(heading, items, mode) {
   root.appendChild(el("h2", "content-heading", heading));
 
   const grid = el(
-  "div",
-  mode === "known"
-    ? "credit-grid known-for-slider"
-    : "credit-grid"
-);
+    "div",
+    mode === "known"
+      ? "credit-grid known-for-slider"
+      : "credit-grid"
+  );
+
   const seen = new Set();
 
   items.forEach(item => {
@@ -377,7 +533,6 @@ function addCredits(heading, items, mode) {
           ? item.character || ""
           : "";
 
-    // Avoid duplicate cards within a section.
     const key = `${type}-${item.id}-${role}`;
 
     if (seen.has(key)) return;
@@ -390,7 +545,9 @@ function addCredits(heading, items, mode) {
 
     card.setAttribute(
       "aria-label",
-      `${item.title || item.name || "Title"}${role ? " — " + role : ""}`
+      `${item.title || item.name || "Title"}${
+        role ? " — " + role : ""
+      }`
     );
 
     if (item.poster_path) {
