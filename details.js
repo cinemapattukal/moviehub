@@ -30,6 +30,7 @@ function imageURL(path, size = "w500") {
 
 function makeElement(tag, className = "", text = "") {
   const el = document.createElement(tag);
+
   if (className) el.className = className;
 
   if (text !== undefined && text !== null) {
@@ -63,6 +64,7 @@ function detailRow(label, value) {
   }
 
   const row = makeElement("p", "detail-meta");
+
   row.append(
     makeElement("strong", "", label + ": "),
     document.createTextNode(String(value))
@@ -74,28 +76,40 @@ function detailRow(label, value) {
 function addProfileImage(card, path, name, className) {
   if (path) {
     const photo = makeElement("img", className);
+
     photo.src = imageURL(path, "w185");
     photo.alt = name || "Profile";
     photo.loading = "lazy";
 
     photo.onerror = () => {
       photo.onerror = null;
+
       photo.replaceWith(
-        makeElement("div", className + " image-placeholder", "Image unavailable")
+        makeElement(
+          "div",
+          className + " image-placeholder",
+          "Image unavailable"
+        )
       );
     };
 
     card.appendChild(photo);
   } else {
     card.appendChild(
-      makeElement("div", className + " image-placeholder", "No image")
+      makeElement(
+        "div",
+        className + " image-placeholder",
+        "No image"
+      )
     );
   }
 }
 
 function openPerson(person) {
   if (!person || !person.id) return;
-  location.href = "person.html?id=" + encodeURIComponent(person.id);
+
+  location.href =
+    "person.html?id=" + encodeURIComponent(person.id);
 }
 
 function makeProfileCard(person, crewMode = false) {
@@ -112,7 +126,12 @@ function makeProfileCard(person, crewMode = false) {
   );
 
   card.append(
-    makeElement("strong", crewMode ? "crew-name" : "", person.name || "Unknown"),
+    makeElement(
+      "strong",
+      crewMode ? "crew-name" : "",
+      person.name || "Unknown"
+    ),
+
     makeElement(
       "span",
       crewMode ? "crew-job" : "",
@@ -139,15 +158,21 @@ function makeProfileCard(person, crewMode = false) {
 }
 
 function addHeading(text) {
-  root.appendChild(makeElement("h2", "content-heading", text));
+  root.appendChild(
+    makeElement("h2", "content-heading", text)
+  );
 }
 
 function addMessage(text) {
-  root.appendChild(makeElement("p", "crew-line", text));
+  root.appendChild(
+    makeElement("p", "crew-line", text)
+  );
 }
 
 function renderTrailer(videos) {
-  const list = Array.isArray(videos.results) ? videos.results : [];
+  const list = Array.isArray(videos.results)
+    ? videos.results
+    : [];
 
   const trailer = list.find(video =>
     video.site === "YouTube" &&
@@ -169,14 +194,17 @@ function renderTrailer(videos) {
   const section = makeElement("section", "detail-trailer");
 
   const frame = makeElement("iframe", "detail-trailer-frame");
+
   frame.src =
     "https://www.youtube-nocookie.com/embed/" +
     encodeURIComponent(trailer.key);
 
   frame.title = trailer.name || "Movie trailer";
   frame.loading = "lazy";
+
   frame.allow =
     "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+
   frame.allowFullscreen = true;
   frame.referrerPolicy = "strict-origin-when-cross-origin";
 
@@ -198,12 +226,15 @@ async function initDetails() {
   status.textContent = "Loading details...";
 
   const base =
-    "/api/" + (type === "tv" ? "tv" : "movies") + "/" +
+    "/api/" +
+    (type === "tv" ? "tv" : "movies") +
+    "/" +
     encodeURIComponent(id);
 
   try {
     const [data, credits] = await Promise.all([
       getJSON(API + base + "?language=en-US"),
+
       getJSON(API + base + "/credits?language=en-US")
         .catch(error => {
           console.warn("Credits unavailable:", error);
@@ -215,25 +246,30 @@ async function initDetails() {
     root.replaceChildren();
 
     const title = data.title || data.name || "Untitled";
+
     document.title = title + " — MovieHub";
 
     /* Poster and title section */
+
     const hero = makeElement("section", "detail-hero");
 
     if (data.backdrop_path) {
       hero.style.backgroundImage =
         'linear-gradient(90deg, rgba(9,14,23,.96), rgba(9,14,23,.72), rgba(9,14,23,.42)), url("' +
-        imageURL(data.backdrop_path, "w1280") + '")';
+        imageURL(data.backdrop_path, "w1280") +
+        '")';
     }
 
     const layout = makeElement("div", "detail-layout");
 
     const poster = makeElement("img", "detail-poster");
+
     poster.alt = title + " poster";
     poster.loading = "lazy";
 
     if (data.poster_path) {
       poster.src = imageURL(data.poster_path, "w500");
+
       poster.onerror = () => {
         poster.onerror = null;
         poster.removeAttribute("src");
@@ -253,10 +289,12 @@ async function initDetails() {
         "detail-kicker",
         type === "tv" ? "TV SERIES" : "MOVIE"
       ),
+
       makeElement("h1", "detail-title", title)
     );
 
     const rating = Number(data.vote_average || 0);
+
     const genres = (data.genres || [])
       .map(genre => genre.name)
       .filter(Boolean)
@@ -264,26 +302,41 @@ async function initDetails() {
 
     const runtime = data.runtime
       ? data.runtime + " min"
-      : data.episode_run_time && data.episode_run_time.length
+      : data.episode_run_time &&
+        data.episode_run_time.length
         ? data.episode_run_time[0] + " min/episode"
         : "";
 
     [
-      detailRow("Release", data.release_date || data.first_air_date),
-      detailRow("Rating", rating > 0 ? "★ " + rating.toFixed(1) + "/10" : "Not rated"),
+      detailRow(
+        "Release",
+        data.release_date || data.first_air_date
+      ),
+
+      detailRow(
+        "Rating",
+        rating > 0
+          ? "★ " + rating.toFixed(1) + "/10"
+          : "Not rated"
+      ),
+
       detailRow("Genres", genres),
       detailRow("Runtime", runtime),
       detailRow("Status", data.status),
+
       detailRow(
         "Language",
         data.original_language
           ? data.original_language.toUpperCase()
           : ""
       )
-    ].filter(Boolean).forEach(row => info.appendChild(row));
+    ]
+      .filter(Boolean)
+      .forEach(row => info.appendChild(row));
 
     info.append(
       makeElement("h2", "detail-subtitle", "Overview"),
+
       makeElement(
         "p",
         "detail-overview",
@@ -295,8 +348,26 @@ async function initDetails() {
     hero.appendChild(layout);
     root.appendChild(hero);
 
+    /* Trailer — immediately after Overview */
+
+    try {
+      const videos = await getJSON(
+        API + base + "/videos?language=en-US"
+      );
+
+      renderTrailer(videos);
+    } catch (error) {
+      console.warn("Trailer information unavailable:", error);
+
+      addHeading("Trailer");
+      addMessage("Trailer information could not be loaded.");
+    }
+
     /* Cast */
-    const cast = Array.isArray(credits.cast) ? credits.cast : [];
+
+    const cast = Array.isArray(credits.cast)
+      ? credits.cast
+      : [];
 
     addHeading("Cast");
 
@@ -304,7 +375,9 @@ async function initDetails() {
       const castGrid = makeElement("div", "cast-grid");
 
       cast.slice(0, 24).forEach(person => {
-        castGrid.appendChild(makeProfileCard(person, false));
+        castGrid.appendChild(
+          makeProfileCard(person, false)
+        );
       });
 
       root.appendChild(castGrid);
@@ -313,7 +386,10 @@ async function initDetails() {
     }
 
     /* Crew */
-    const crew = Array.isArray(credits.crew) ? credits.crew : [];
+
+    const crew = Array.isArray(credits.crew)
+      ? credits.crew
+      : [];
 
     addHeading("Crew");
 
@@ -329,7 +405,9 @@ async function initDetails() {
       });
 
       sortedCrew.forEach(person => {
-        crewGrid.appendChild(makeProfileCard(person, true));
+        crewGrid.appendChild(
+          makeProfileCard(person, true)
+        );
       });
 
       root.appendChild(crewGrid);
@@ -337,18 +415,9 @@ async function initDetails() {
       addMessage("Crew information unavailable.");
     }
 
-    /* Trailer: requires Worker /videos route */
-    try {
-      const videos = await getJSON(API + base + "/videos?language=en-US");
-      renderTrailer(videos);
-    } catch (error) {
-      console.warn("Trailer information unavailable:", error);
-      addHeading("Trailer");
-      addMessage("Trailer information could not be loaded.");
-    }
-
   } catch (error) {
     console.error("MovieHub details error:", error);
+
     status.textContent =
       "Could not load details. Please refresh and try again.";
   }
