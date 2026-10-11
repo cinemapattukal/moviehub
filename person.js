@@ -345,14 +345,11 @@ async function init() {
       biography.appendChild(readMore);
     }
 
-    // Biography stays in the main profile area
+    bio.appendChild(personalInfo);
 bio.appendChild(biography);
 
 profile.appendChild(bio);
 root.appendChild(profile);
-
-// Personal Info goes below the profile on desktop
-root.appendChild(personalInfo);
 
     // PROFILE STYLES
     if (!document.getElementById("person-mobile-profile-styles")) {
