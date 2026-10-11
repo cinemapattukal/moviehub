@@ -100,7 +100,7 @@ async function init() {
     return;
   }
 
-  status.textContent = "Loading profile and work history...";
+  status.textContent = "Loading actor profile...";
 
   try {
     const person = await getFirstWorking([
@@ -175,11 +175,9 @@ async function init() {
     document.title = `${person.name || "Person"} — MovieHub`;
 
     // PROFILE PHOTO
-    const profile = el("section", "person-hero");
+    const photo = el("img", "person-large-photo");
 
     if (person.profile_path) {
-      const photo = el("img", "person-large-photo");
-
       photo.src = img(person.profile_path, "h632");
       photo.alt = person.name || "Person";
       photo.loading = "lazy";
@@ -194,10 +192,8 @@ async function init() {
           )
         );
       };
-
-      profile.appendChild(photo);
     } else {
-      profile.appendChild(
+      photo.replaceWith(
         el(
           "div",
           "person-large-photo person-photo-placeholder",
@@ -206,6 +202,7 @@ async function init() {
       );
     }
 
+    // PERSON NAME
     const bio = el("div", "person-bio");
 
     bio.append(
@@ -284,13 +281,11 @@ async function init() {
 
     personalInfo.appendChild(infoGrid);
 
-    // BIOGRAPHY + READ MORE
+    // BIOGRAPHY
     const biography = el("section", "person-biography-section");
 
-    const bioHeading = el(
-      "h2",
-      "detail-subtitle",
-      "Biography"
+    biography.appendChild(
+      el("h2", "detail-subtitle", "Biography")
     );
 
     const bioText = el("div", "person-biography-text");
@@ -299,75 +294,80 @@ async function init() {
       person.biography || "No biography available."
     ).trim();
 
-    const fullBiography = biographySource
+    const paragraphs = biographySource
       .split(/\n\s*\n/)
       .map(paragraph => paragraph.trim())
       .filter(Boolean);
 
-    fullBiography.forEach(paragraph => {
+    paragraphs.forEach(paragraph => {
       bioText.appendChild(
         el("p", "detail-overview", paragraph)
       );
     });
 
-    const readMore = el(
-      "button",
-      "bio-read-more",
-      "Read More ›"
-    );
-
-    readMore.type = "button";
-    readMore.setAttribute("aria-expanded", "false");
-
-    let expanded = false;
-
-    readMore.addEventListener("click", () => {
-      expanded = !expanded;
-
-      bioText.classList.toggle(
-        "bio-collapsed",
-        !expanded
-      );
-
-      readMore.textContent = expanded
-        ? "Read Less ↑"
-        : "Read More ›";
-
-      readMore.setAttribute(
-        "aria-expanded",
-        String(expanded)
-      );
-    });
-
-    biography.append(bioHeading, bioText);
+    biography.appendChild(bioText);
 
     if (biographySource.length > 300) {
       bioText.classList.add("bio-collapsed");
+
+      const readMore = el(
+        "button",
+        "bio-read-more",
+        "Read More ›"
+      );
+
+      readMore.type = "button";
+      readMore.setAttribute("aria-expanded", "false");
+
+      let expanded = false;
+
+      readMore.addEventListener("click", () => {
+        expanded = !expanded;
+
+        bioText.classList.toggle(
+          "bio-collapsed",
+          !expanded
+        );
+
+        readMore.textContent = expanded
+          ? "Read Less ↑"
+          : "Read More ›";
+
+        readMore.setAttribute(
+          "aria-expanded",
+          String(expanded)
+        );
+      });
+
       biography.appendChild(readMore);
     }
 
-    // DESKTOP: LEFT SIDEBAR + RIGHT CONTENT
+    // TMDB-STYLE TWO-COLUMN LAYOUT
+    const profile = el("section", "person-hero");
+    const sidebar = el("aside", "person-sidebar");
+    const mainColumn = el("div", "person-main-column");
     const workColumn = el("div", "person-work-column");
 
-    profile.appendChild(bio);
-    profile.appendChild(personalInfo);
-    profile.appendChild(biography);
-    profile.appendChild(workColumn);
+    sidebar.appendChild(photo);
+    sidebar.appendChild(personalInfo);
+
+    mainColumn.appendChild(bio);
+    mainColumn.appendChild(biography);
+    mainColumn.appendChild(workColumn);
+
+    profile.appendChild(sidebar);
+    profile.appendChild(mainColumn);
 
     root.appendChild(profile);
 
     creditsRoot = workColumn;
 
-    // RESPONSIVE STYLES
+    // RESPONSIVE CSS: DESKTOP ONLY LAYOUT CHANGE
     if (!document.getElementById("person-mobile-profile-styles")) {
-      const mobileStyles = el("style");
-      mobileStyles.id = "person-mobile-profile-styles";
+      const styles = el("style");
+      styles.id = "person-mobile-profile-styles";
 
-      mobileStyles.textContent = `
-        .person-personal-info {
-          margin-top: 28px;
-        }
-
+      styles.textContent = `
         .person-info-heading {
           margin: 0 0 16px;
         }
@@ -398,7 +398,7 @@ async function init() {
         }
 
         .person-biography-section {
-          margin-top: 26px;
+          margin-top: 22px;
           min-width: 0;
         }
 
@@ -430,28 +430,42 @@ async function init() {
           .person-hero {
             display: grid !important;
             grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
-            grid-template-areas:
-              "photo name"
-              "info biography"
-              "info work";
             align-items: start;
             gap: 0 30px !important;
           }
 
+          .person-sidebar {
+            grid-column: 1;
+            grid-row: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          .person-main-column {
+            grid-column: 2;
+            grid-row: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+          }
+
           .person-large-photo {
-            grid-area: photo;
+            display: block;
             width: 100% !important;
             max-width: 100%;
-            height: auto;
+            height: auto !important;
             aspect-ratio: 2 / 3;
             object-fit: cover;
             border-radius: 12px;
+            margin: 0 !important;
           }
 
           .person-bio {
-            grid-area: name;
+            display: block !important;
+            width: 100%;
             min-width: 0;
-            display: contents;
           }
 
           .person-bio > .detail-kicker {
@@ -459,12 +473,11 @@ async function init() {
           }
 
           .person-profile-name {
-            grid-area: name;
             margin: 0 0 22px !important;
+            text-align: left;
           }
 
           .person-personal-info {
-            grid-area: info;
             margin-top: 22px;
             min-width: 0;
           }
@@ -479,13 +492,10 @@ async function init() {
           }
 
           .person-biography-section {
-            grid-area: biography;
             margin-top: 0;
-            min-width: 0;
           }
 
           .person-work-column {
-            grid-area: work;
             min-width: 0;
           }
         }
@@ -496,6 +506,11 @@ async function init() {
             flex-direction: column !important;
             align-items: stretch !important;
             gap: 18px !important;
+          }
+
+          .person-sidebar,
+          .person-main-column {
+            display: contents !important;
           }
 
           .person-large-photo {
@@ -529,6 +544,10 @@ async function init() {
             margin-top: 30px;
           }
 
+          .person-biography-section {
+            margin-top: 30px;
+          }
+
           .person-info-heading {
             font-size: 28px;
             margin-bottom: 18px;
@@ -547,14 +566,10 @@ async function init() {
             font-size: 16px;
             line-height: 1.45;
           }
-
-          .person-biography-section {
-            margin-top: 30px;
-          }
         }
       `;
 
-      document.head.appendChild(mobileStyles);
+      document.head.appendChild(styles);
     }
 
     // KNOWN FOR
