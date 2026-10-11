@@ -325,6 +325,28 @@ async function initDetails() {
           )
         );
 
+
+card.style.cursor = "pointer";
+card.setAttribute("role", "link");
+card.tabIndex = 0;
+
+function openCrewProfile() {
+  if (person.id) {
+    location.href =
+      "person.html?id=" + encodeURIComponent(person.id);
+  }
+}
+
+card.addEventListener("click", openCrewProfile);
+
+card.addEventListener("keydown", event => {
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    openCrewProfile();
+  }
+});
+
+        
         crewGrid.appendChild(card);
       });
 
