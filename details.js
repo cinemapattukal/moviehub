@@ -32,7 +32,6 @@ function makeElement(tag, className = "", text = "") {
   const el = document.createElement(tag);
 
   if (className) el.className = className;
-
   if (text !== undefined && text !== null) {
     el.textContent = text;
   }
@@ -71,6 +70,183 @@ function detailRow(label, value) {
   );
 
   return row;
+}
+
+/* Trailer popup */
+
+function findTrailer(videos) {
+  const list = Array.isArray(videos?.results)
+    ? videos.results
+    : [];
+
+  return list.find(video =>
+    video.site === "YouTube" &&
+    video.type === "Trailer" &&
+    video.key
+  ) || list.find(video =>
+    video.site === "YouTube" &&
+    video.type === "Teaser" &&
+    video.key
+  ) || null;
+}
+
+function openTrailerPopup(video) {
+  if (!video || !video.key) return;
+
+  const overlay = makeElement("div", "movie-trailer-overlay");
+
+  Object.assign(overlay.style, {
+    position: "fixed",
+    inset: "0",
+    zIndex: "99999",
+    background: "rgba(0,0,0,0.88)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "16px",
+    boxSizing: "border-box"
+  });
+
+  const dialog = makeElement("div", "movie-trailer-dialog");
+
+  Object.assign(dialog.style, {
+    position: "relative",
+    width: "100%",
+    maxWidth: "960px",
+    background: "#111827",
+    borderRadius: "14px",
+    padding: "12px",
+    boxSizing: "border-box",
+    boxShadow: "0 15px 50px rgba(0,0,0,.6)"
+  });
+
+  const top = makeElement("div", "movie-trailer-top");
+
+  Object.assign(top.style, {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "12px",
+    marginBottom: "10px",
+    color: "#fff"
+  });
+
+  const heading = makeElement(
+    "strong",
+    "",
+    video.name || "Movie Trailer"
+  );
+
+  const closeButton = makeElement("button", "", "×");
+
+  closeButton.type = "button";
+  closeButton.setAttribute("aria-label", "Close trailer");
+
+  Object.assign(closeButton.style, {
+    background: "#263244",
+    color: "#fff",
+    border: "0",
+    borderRadius: "50%",
+    width: "40px",
+    height: "40px",
+    fontSize: "28px",
+    lineHeight: "1",
+    cursor: "pointer",
+    flexShrink: "0"
+  });
+
+  top.append(heading, closeButton);
+
+  const videoBox = makeElement("div", "movie-trailer-video");
+
+  Object.assign(videoBox.style, {
+    position: "relative",
+    width: "100%",
+    aspectRatio: "16 / 9",
+    background: "#000",
+    overflow: "hidden",
+    borderRadius: "8px"
+  });
+
+  const frame = makeElement("iframe");
+
+  frame.src =
+    "https://www.youtube-nocookie.com/embed/" +
+    encodeURIComponent(video.key) +
+    "?autoplay=1&rel=0";
+
+  frame.title = video.name || "Movie trailer";
+  frame.allow =
+    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+  frame.allowFullscreen = true;
+  frame.referrerPolicy = "strict-origin-when-cross-origin";
+
+  Object.assign(frame.style, {
+    position: "absolute",
+    inset: "0",
+    width: "100%",
+    height: "100%",
+    border: "0"
+  });
+
+  videoBox.appendChild(frame);
+  dialog.append(top, videoBox);
+  overlay.appendChild(dialog);
+  document.body.appendChild(overlay);
+
+  const oldOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+
+  function closePopup() {
+    overlay.remove();
+    document.body.style.overflow = oldOverflow;
+    document.removeEventListener("keydown", onKeyDown);
+  }
+
+  function onKeyDown(event) {
+    if (event.key === "Escape") closePopup();
+  }
+
+  closeButton.addEventListener("click", closePopup);
+
+  overlay.addEventListener("click", event => {
+    if (event.target === overlay) closePopup();
+  });
+
+  document.addEventListener("keydown", onKeyDown);
+  closeButton.focus();
+}
+
+function makeTrailerButton(video) {
+  const button = makeElement(
+    "button",
+    "play-trailer-button",
+    "▶ Play Trailer"
+  );
+
+  button.type = "button";
+
+  Object.assign(button.style, {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "8px",
+    margin: "12px 0 18px",
+    padding: "12px 20px",
+    border: "0",
+    borderRadius: "8px",
+    background: "#60a5fa",
+    color: "#07111f",
+    fontSize: "15px",
+    fontWeight: "700",
+    cursor: "pointer"
+  });
+
+  button.addEventListener("click", () => {
+    openTrailerPopup(video);
+  });
+
+  return button;
 }
 
 function addProfileImage(card, path, name, className) {
@@ -169,49 +345,6 @@ function addMessage(text) {
   );
 }
 
-function renderTrailer(videos) {
-  const list = Array.isArray(videos.results)
-    ? videos.results
-    : [];
-
-  const trailer = list.find(video =>
-    video.site === "YouTube" &&
-    video.type === "Trailer" &&
-    video.key
-  ) || list.find(video =>
-    video.site === "YouTube" &&
-    video.type === "Teaser" &&
-    video.key
-  );
-
-  addHeading("Trailer");
-
-  if (!trailer) {
-    addMessage("No trailer available for this title.");
-    return;
-  }
-
-  const section = makeElement("section", "detail-trailer");
-
-  const frame = makeElement("iframe", "detail-trailer-frame");
-
-  frame.src =
-    "https://www.youtube-nocookie.com/embed/" +
-    encodeURIComponent(trailer.key);
-
-  frame.title = trailer.name || "Movie trailer";
-  frame.loading = "lazy";
-
-  frame.allow =
-    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-
-  frame.allowFullscreen = true;
-  frame.referrerPolicy = "strict-origin-when-cross-origin";
-
-  section.appendChild(frame);
-  root.appendChild(section);
-}
-
 async function initDetails() {
   if (!status || !root) {
     console.error("MovieHub: details HTML elements missing.");
@@ -232,13 +365,19 @@ async function initDetails() {
     encodeURIComponent(id);
 
   try {
-    const [data, credits] = await Promise.all([
+    const [data, credits, videos] = await Promise.all([
       getJSON(API + base + "?language=en-US"),
 
       getJSON(API + base + "/credits?language=en-US")
         .catch(error => {
           console.warn("Credits unavailable:", error);
           return { cast: [], crew: [] };
+        }),
+
+      getJSON(API + base + "/videos?language=en-US")
+        .catch(error => {
+          console.warn("Trailer information unavailable:", error);
+          return { results: [] };
         })
     ]);
 
@@ -249,7 +388,7 @@ async function initDetails() {
 
     document.title = title + " — MovieHub";
 
-    /* Poster and title section */
+    /* Movie details hero */
 
     const hero = makeElement("section", "detail-hero");
 
@@ -334,6 +473,14 @@ async function initDetails() {
       .filter(Boolean)
       .forEach(row => info.appendChild(row));
 
+    /* Play Trailer button inside details */
+
+    const trailer = findTrailer(videos);
+
+    if (trailer) {
+      info.appendChild(makeTrailerButton(trailer));
+    }
+
     info.append(
       makeElement("h2", "detail-subtitle", "Overview"),
 
@@ -347,21 +494,6 @@ async function initDetails() {
     layout.appendChild(info);
     hero.appendChild(layout);
     root.appendChild(hero);
-
-    /* Trailer — immediately after Overview */
-
-    try {
-      const videos = await getJSON(
-        API + base + "/videos?language=en-US"
-      );
-
-      renderTrailer(videos);
-    } catch (error) {
-      console.warn("Trailer information unavailable:", error);
-
-      addHeading("Trailer");
-      addMessage("Trailer information could not be loaded.");
-    }
 
     /* Cast */
 
