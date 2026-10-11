@@ -244,7 +244,57 @@ async function init() {
       ({ 1: "Female", 2: "Male", 3: "Non-binary" })[person.gender] || "—"
     );
 
-    addInfo("Birthday", person.birthday || "—");
+    function formatBirthday(birthday) {
+  if (!birthday) return "—";
+
+  const date = new Date(birthday + "T00:00:00");
+
+  if (Number.isNaN(date.getTime())) return birthday;
+
+  const formattedDate = date.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric"
+  });
+
+  let ageText = "";
+
+  if (person.deathday) {
+    const deathDate = new Date(person.deathday + "T00:00:00");
+    let age = deathDate.getFullYear() - date.getFullYear();
+
+    if (
+      deathDate.getMonth() < date.getMonth() ||
+      (
+        deathDate.getMonth() === date.getMonth() &&
+        deathDate.getDate() < date.getDate()
+      )
+    ) {
+      age--;
+    }
+
+    ageText = ` (${age} years old)`;
+  } else {
+    const today = new Date();
+    let age = today.getFullYear() - date.getFullYear();
+
+    if (
+      today.getMonth() < date.getMonth() ||
+      (
+        today.getMonth() === date.getMonth() &&
+        today.getDate() < date.getDate()
+      )
+    ) {
+      age--;
+    }
+
+    ageText = ` (${age} years old)`;
+  }
+
+  return formattedDate + ageText;
+}
+
+addInfo("Birthday", formatBirthday(person.birthday));
 
     addInfo(
       "Place of Birth",
