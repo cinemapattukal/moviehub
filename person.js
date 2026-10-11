@@ -1,4 +1,3 @@
-
 "use strict";
 
 const API = "https://restless-block-eb74.cinemapattukal.workers.dev";
@@ -32,7 +31,11 @@ async function getJSON(url) {
   const data = await response.json();
 
   if (data.error) {
-    throw new Error(data.details || data.error);
+    throw new Error(
+      typeof data.details === "string"
+        ? data.details
+        : data.error
+    );
   }
 
   return data;
@@ -43,16 +46,50 @@ async function getFirstWorking(urls, fallback = {}) {
     try {
       return await getJSON(url);
     } catch (error) {
-      console.warn("API endpoint unavailable:", url, error.message);
+      console.warn(
+        "MovieHub endpoint unavailable:",
+        url,
+        error.message
+      );
     }
   }
 
   return fallback;
 }
 
+function uniqueCredits(items) {
+  const seen = new Set();
+
+  return (items || []).filter(item => {
+    if (!item || !item.id) return false;
+
+    const type =
+      item.media_type ||
+      (item.first_air_date ? "tv" : "movie");
+
+    const key = `${type}-${item.id}-${item.job || item.character || ""}`;
+
+    if (seen.has(key)) return false;
+
+    seen.add(key);
+    return true;
+  });
+}
+
+function sortByDate(items) {
+  return [...items].sort((a, b) => {
+    const dateA = a.release_date || a.first_air_date || "";
+    const dateB = b.release_date || b.first_air_date || "";
+
+    return dateB.localeCompare(dateA);
+  });
+}
+
 async function init() {
   if (!status || !root) {
-    console.error("Profile HTML elements are missing.");
+    console.error(
+      "MovieHub: person-status/person-content element missing."
+    );
     return;
   }
 
@@ -70,7 +107,7 @@ async function init() {
     ]);
 
     if (!person || !person.id) {
-      throw new Error("Person details not returned by API.");
+      throw new Error("Person details were not returned by the API.");
     }
 
     const credits = await getFirstWorking([
@@ -94,10 +131,11 @@ async function init() {
       ]);
     }
 
-    const cast = credits
+    const allCast = credits
       ? (credits.cast || []).map(item => ({
           ...item,
-          media_type: item.media_type ||
+          media_type:
+            item.media_type ||
             (item.first_air_date ? "tv" : "movie")
         }))
       : [
@@ -111,10 +149,11 @@ async function init() {
           }))
         ];
 
-    const crew = credits
+    const allCrew = credits
       ? (credits.crew || []).map(item => ({
           ...item,
-          media_type: item.media_type ||
+          media_type:
+            item.media_type ||
             (item.first_air_date ? "tv" : "movie")
         }))
       : [
@@ -133,11 +172,12 @@ async function init() {
 
     document.title = `${person.name || "Person"} — MovieHub`;
 
-    // Profile header
+    // PERSON PROFILE
     const profile = el("section", "person-hero");
 
     if (person.profile_path) {
       const photo = el("img", "person-large-photo");
+
       photo.src = img(person.profile_path, "h632");
       photo.alt = person.name || "Person";
       photo.loading = "lazy";
@@ -145,14 +185,22 @@ async function init() {
       photo.onerror = () => {
         photo.onerror = null;
         photo.replaceWith(
-          el("div", "person-large-photo person-photo-placeholder", "No image")
+          el(
+            "div",
+            "person-large-photo person-photo-placeholder",
+            "No image"
+          )
         );
       };
 
       profile.appendChild(photo);
     } else {
       profile.appendChild(
-        el("div", "person-large-photo person-photo-placeholder", "No image")
+        el(
+          "div",
+          "person-large-photo person-photo-placeholder",
+          "No image"
+        )
       );
     }
 
@@ -165,16 +213,25 @@ async function init() {
 
     if (person.known_for_department) {
       bio.appendChild(
-        el("p", "detail-meta",
-          "Department: " + person.known_for_department)
+        el(
+          "p",
+          "detail-meta",
+          "Department: " + person.known_for_department
+        )
       );
     }
 
     if (person.birthday) {
       bio.appendChild(
-        el("p", "detail-meta",
-          "Born: " + person.birthday +
-          (person.place_of_birth ? " · " + person.place_of_birth : ""))
+        el(
+          "p",
+          "detail-meta",
+          "Born: " +
+            person.birthday +
+            (person.place_of_birth
+              ? " · " + person.place_of_birth
+              : "")
+        )
       );
     }
 
@@ -186,36 +243,49 @@ async function init() {
 
     bio.append(
       el("h2", "detail-subtitle", "Biography"),
-      el("p", "detail-overview",
-        person.biography || "No biography available.")
+      el(
+        "p",
+        "detail-overview",
+        person.biography || "No biography available."
+      )
     );
 
     profile.appendChild(bio);
     root.appendChild(profile);
 
-    // Known For
-    const knownFor = [...cast, ...crew]
-      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
+    // KNOWN FOR
+    const allKnown = uniqueCredits([
+      ...allCast,
+      ...allCrew
+    ]);
+
+    const knownFor = [...allKnown]
+      .sort((a, b) =>
+        (b.popularity || 0) - (a.popularity || 0)
+      )
       .slice(0, 12);
 
     addCredits("Known For", knownFor, "known");
 
-    // Acting credits
-    cast.sort((a, b) => {
-      const dateA = a.release_date || a.first_air_date || "";
-      const dateB = b.release_date || b.first_air_date || "";
-      return dateB.localeCompare(dateA);
-    });
+    // SPLIT MOVIES AND TV SERIES
+    const movieCast = sortByDate(
+      allCast.filter(item => item.media_type === "movie")
+    );
 
-    addCredits("Movies & TV Series", cast, "cast");
+    const tvCast = sortByDate(
+      allCast.filter(item => item.media_type === "tv")
+    );
 
-    // Directing, writing and other crew credits
-    const priorityJobs = [
+    addCredits("Movies", movieCast, "cast");
+    addCredits("TV Series", tvCast, "cast");
+
+    // CREW WORK: SPLIT BY MEDIA TYPE
+    const crewJobs = [
       "Director",
       "Writer",
       "Screenplay",
-      "Creator",
       "Story",
+      "Creator",
       "Producer",
       "Executive Producer",
       "Original Music Composer",
@@ -223,25 +293,58 @@ async function init() {
       "Editor"
     ];
 
-    crew.sort((a, b) => {
-      const jobA = priorityJobs.indexOf(a.job);
-      const jobB = priorityJobs.indexOf(b.job);
+    function sortCrew(items) {
+      return [...items].sort((a, b) => {
+        const rank = job => {
+          const index = crewJobs.indexOf(job || "");
+          return index < 0 ? 999 : index;
+        };
 
-      return (jobA < 0 ? 999 : jobA) -
-             (jobB < 0 ? 999 : jobB);
-    });
+        const rankDifference = rank(a.job) - rank(b.job);
 
-    addCredits("Crew Work", crew, "crew");
+        if (rankDifference !== 0) {
+          return rankDifference;
+        }
 
-    if (!cast.length && !crew.length) {
+        const dateA = a.release_date || a.first_air_date || "";
+        const dateB = b.release_date || b.first_air_date || "";
+
+        return dateB.localeCompare(dateA);
+      });
+    }
+
+    const movieCrew = sortCrew(
+      allCrew.filter(
+        item =>
+          item.media_type === "movie" &&
+          (item.job || item.department)
+      )
+    );
+
+    const tvCrew = sortCrew(
+      allCrew.filter(
+        item =>
+          item.media_type === "tv" &&
+          (item.job || item.department)
+      )
+    );
+
+    addCredits("Movie Crew Work", movieCrew, "crew");
+    addCredits("TV Series Crew Work", tvCrew, "crew");
+
+    if (!allCast.length && !allCrew.length) {
       root.appendChild(
-        el("p", "crew-line",
-          "No movie or TV work history was returned by the API.")
+        el(
+          "p",
+          "crew-line",
+          "No movie or TV work history was returned by the API."
+        )
       );
     }
 
   } catch (error) {
-    console.error("MovieHub profile error:", error);
+    console.error("MovieHub person profile error:", error);
+
     status.textContent =
       "Profile could not load: " + error.message;
   }
@@ -256,18 +359,21 @@ function addCredits(heading, items, mode) {
   const seen = new Set();
 
   items.forEach(item => {
-    if (!item.id) return;
-
     const type =
-      item.media_type === "tv" || item.first_air_date
+      item.media_type === "tv" ||
+      item.first_air_date
         ? "tv"
         : "movie";
 
-    const job = mode === "crew"
-      ? item.job || item.department || "Crew"
-      : "";
+    const role =
+      mode === "crew"
+        ? item.job || item.department || ""
+        : mode === "cast"
+          ? item.character || ""
+          : "";
 
-    const key = `${type}-${item.id}-${job}`;
+    // Avoid duplicate cards within a section.
+    const key = `${type}-${item.id}-${role}`;
 
     if (seen.has(key)) return;
     seen.add(key);
@@ -277,34 +383,44 @@ function addCredits(heading, items, mode) {
     card.href =
       `details.html?id=${encodeURIComponent(item.id)}&type=${type}`;
 
-    const title = item.title || item.name || "Untitled";
+    card.setAttribute(
+      "aria-label",
+      `${item.title || item.name || "Title"}${role ? " — " + role : ""}`
+    );
 
     if (item.poster_path) {
       const poster = el("img", "credit-poster");
 
       poster.src = img(item.poster_path, "w342");
-      poster.alt = title;
+      poster.alt = item.title || item.name || "Poster";
       poster.loading = "lazy";
 
       poster.onerror = () => {
         poster.onerror = null;
+
         poster.replaceWith(
-          el("div", "credit-poster credit-placeholder", "No poster")
+          el(
+            "div",
+            "credit-poster credit-placeholder",
+            "No poster"
+          )
         );
       };
 
       card.appendChild(poster);
     } else {
       card.appendChild(
-        el("div", "credit-poster credit-placeholder", "No poster")
+        el(
+          "div",
+          "credit-poster credit-placeholder",
+          "No poster"
+        )
       );
     }
 
+    const title = item.title || item.name || "Untitled";
     const date = item.release_date || item.first_air_date || "";
     const year = date.slice(0, 4);
-    const role = mode === "crew"
-      ? job
-      : item.character || "";
 
     card.append(
       el("strong", "", title),
@@ -315,9 +431,7 @@ function addCredits(heading, items, mode) {
     grid.appendChild(card);
   });
 
-  if (grid.children.length) {
-    root.appendChild(grid);
-  }
+  root.appendChild(grid);
 }
 
 init();
