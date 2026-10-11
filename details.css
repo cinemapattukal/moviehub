@@ -232,5 +232,39 @@
   .crew-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
+/* TMDB-style biography paragraphs */
+.person-biography-section {
+  min-width: 0;
+}
+
+.person-biography-text p {
+  margin: 0 0 18px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+}
+
+.person-biography-text.bio-collapsed {
+  max-height: 220px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bio-read-more {
+  display: block;
+  margin: 6px 0 18px auto;
+  padding: 6px 0;
+  border: none;
+  background: transparent;
+  color: #01b4e4;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 767px) {
+  .person-biography-text p {
+    line-height: 1.65;
+    margin-bottom: 18px;
+  }
 }
 
