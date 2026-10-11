@@ -8,6 +8,7 @@ const id = params.get("id");
 
 const status = document.getElementById("person-status");
 const root = document.getElementById("person-content");
+let creditsRoot = root;
 
 const img = (path, size = "w500") =>
   path ? IMG + size + path : "";
@@ -173,7 +174,7 @@ async function init() {
 
     document.title = `${person.name || "Person"} — MovieHub`;
 
-    // PERSON PROFILE
+    // PROFILE PHOTO
     const profile = el("section", "person-hero");
 
     if (person.profile_path) {
@@ -283,7 +284,7 @@ async function init() {
 
     personalInfo.appendChild(infoGrid);
 
-    // BIOGRAPHY WITH READ MORE / READ LESS
+    // BIOGRAPHY + READ MORE
     const biography = el("section", "person-biography-section");
 
     const bioHeading = el(
@@ -345,16 +346,21 @@ async function init() {
       biography.appendChild(readMore);
     }
 
-    bio.appendChild(personalInfo);
-bio.appendChild(biography);
+    // DESKTOP: LEFT SIDEBAR + RIGHT CONTENT
+    const workColumn = el("div", "person-work-column");
 
-profile.appendChild(bio);
-root.appendChild(profile);
+    profile.appendChild(bio);
+    profile.appendChild(personalInfo);
+    profile.appendChild(biography);
+    profile.appendChild(workColumn);
 
-    // PROFILE STYLES
+    root.appendChild(profile);
+
+    creditsRoot = workColumn;
+
+    // RESPONSIVE STYLES
     if (!document.getElementById("person-mobile-profile-styles")) {
       const mobileStyles = el("style");
-
       mobileStyles.id = "person-mobile-profile-styles";
 
       mobileStyles.textContent = `
@@ -418,6 +424,70 @@ root.appendChild(profile);
           font: inherit;
           font-weight: 600;
           cursor: pointer;
+        }
+
+        @media (min-width: 768px) {
+          .person-hero {
+            display: grid !important;
+            grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+            grid-template-areas:
+              "photo name"
+              "info biography"
+              "info work";
+            align-items: start;
+            gap: 0 30px !important;
+          }
+
+          .person-large-photo {
+            grid-area: photo;
+            width: 100% !important;
+            max-width: 100%;
+            height: auto;
+            aspect-ratio: 2 / 3;
+            object-fit: cover;
+            border-radius: 12px;
+          }
+
+          .person-bio {
+            grid-area: name;
+            min-width: 0;
+            display: contents;
+          }
+
+          .person-bio > .detail-kicker {
+            display: none;
+          }
+
+          .person-profile-name {
+            grid-area: name;
+            margin: 0 0 22px !important;
+          }
+
+          .person-personal-info {
+            grid-area: info;
+            margin-top: 22px;
+            min-width: 0;
+          }
+
+          .person-info-grid {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 14px;
+          }
+
+          .person-info-wide {
+            grid-column: auto;
+          }
+
+          .person-biography-section {
+            grid-area: biography;
+            margin-top: 0;
+            min-width: 0;
+          }
+
+          .person-work-column {
+            grid-area: work;
+            min-width: 0;
+          }
         }
 
         @media (max-width: 767px) {
@@ -567,7 +637,7 @@ root.appendChild(profile);
     addCredits("TV Series Crew Work", tvCrew, "crew");
 
     if (!allCast.length && !allCrew.length) {
-      root.appendChild(
+      workColumn.appendChild(
         el(
           "p",
           "crew-line",
@@ -587,7 +657,9 @@ root.appendChild(profile);
 function addCredits(heading, items, mode) {
   if (!items || !items.length) return;
 
-  root.appendChild(el("h2", "content-heading", heading));
+  creditsRoot.appendChild(
+    el("h2", "content-heading", heading)
+  );
 
   const grid = el(
     "div",
@@ -672,7 +744,7 @@ function addCredits(heading, items, mode) {
     grid.appendChild(card);
   });
 
-  root.appendChild(grid);
+  creditsRoot.appendChild(grid);
 }
 
 init();
