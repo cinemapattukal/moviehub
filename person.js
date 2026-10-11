@@ -47,11 +47,7 @@ async function getFirstWorking(urls, fallback = {}) {
     try {
       return await getJSON(url);
     } catch (error) {
-      console.warn(
-        "MovieHub endpoint unavailable:",
-        url,
-        error.message
-      );
+      console.warn("MovieHub endpoint unavailable:", url, error.message);
     }
   }
 
@@ -82,16 +78,13 @@ function sortByDate(items) {
   return [...items].sort((a, b) => {
     const dateA = a.release_date || a.first_air_date || "";
     const dateB = b.release_date || b.first_air_date || "";
-
     return dateB.localeCompare(dateA);
   });
 }
 
 async function init() {
   if (!status || !root) {
-    console.error(
-      "MovieHub: person-status/person-content element missing."
-    );
+    console.error("MovieHub: person-status/person-content element missing.");
     return;
   }
 
@@ -185,20 +178,12 @@ async function init() {
       photo.onerror = () => {
         photo.onerror = null;
         photo.replaceWith(
-          el(
-            "div",
-            "person-large-photo person-photo-placeholder",
-            "No image"
-          )
+          el("div", "person-large-photo person-photo-placeholder", "No image")
         );
       };
     } else {
       photo.replaceWith(
-        el(
-          "div",
-          "person-large-photo person-photo-placeholder",
-          "No image"
-        )
+        el("div", "person-large-photo person-photo-placeholder", "No image")
       );
     }
 
@@ -207,11 +192,7 @@ async function init() {
 
     bio.append(
       el("span", "detail-kicker", "PERSON PROFILE"),
-      el(
-        "h1",
-        "detail-title person-profile-name",
-        person.name || "Unknown"
-      )
+      el("h1", "detail-title person-profile-name", person.name || "Unknown")
     );
 
     // PERSONAL INFO
@@ -234,8 +215,7 @@ async function init() {
 
       const item = el(
         "div",
-        "person-info-item" +
-          (extraClass ? " " + extraClass : "")
+        "person-info-item" + (extraClass ? " " + extraClass : "")
       );
 
       item.append(
@@ -247,8 +227,7 @@ async function init() {
     };
 
     const stageName =
-      Array.isArray(person.also_known_as) &&
-      person.also_known_as.length
+      Array.isArray(person.also_known_as) && person.also_known_as.length
         ? person.also_known_as.slice(0, 2).join(", ")
         : "";
 
@@ -262,9 +241,7 @@ async function init() {
 
     addInfo(
       "Gender",
-      ({ 1: "Female", 2: "Male", 3: "Non-binary" })[
-        person.gender
-      ] || "—"
+      ({ 1: "Female", 2: "Male", 3: "Non-binary" })[person.gender] || "—"
     );
 
     addInfo("Birthday", person.birthday || "—");
@@ -310,11 +287,7 @@ async function init() {
     if (biographySource.length > 300) {
       bioText.classList.add("bio-collapsed");
 
-      const readMore = el(
-        "button",
-        "bio-read-more",
-        "Read More ›"
-      );
+      const readMore = el("button", "bio-read-more", "Read More ›");
 
       readMore.type = "button";
       readMore.setAttribute("aria-expanded", "false");
@@ -324,25 +297,19 @@ async function init() {
       readMore.addEventListener("click", () => {
         expanded = !expanded;
 
-        bioText.classList.toggle(
-          "bio-collapsed",
-          !expanded
-        );
+        bioText.classList.toggle("bio-collapsed", !expanded);
 
         readMore.textContent = expanded
           ? "Read Less ↑"
           : "Read More ›";
 
-        readMore.setAttribute(
-          "aria-expanded",
-          String(expanded)
-        );
+        readMore.setAttribute("aria-expanded", String(expanded));
       });
 
       biography.appendChild(readMore);
     }
 
-    // TMDB-STYLE TWO-COLUMN LAYOUT
+    // PROFILE LAYOUT
     const profile = el("section", "person-hero");
     const sidebar = el("aside", "person-sidebar");
     const mainColumn = el("div", "person-main-column");
@@ -359,10 +326,9 @@ async function init() {
     profile.appendChild(mainColumn);
 
     root.appendChild(profile);
-
     creditsRoot = workColumn;
 
-    // RESPONSIVE CSS: DESKTOP ONLY LAYOUT CHANGE
+    // RESPONSIVE CSS
     if (!document.getElementById("person-mobile-profile-styles")) {
       const styles = el("style");
       styles.id = "person-mobile-profile-styles";
@@ -426,6 +392,7 @@ async function init() {
           cursor: pointer;
         }
 
+        /* DESKTOP: Keep the existing two-column layout */
         @media (min-width: 768px) {
           .person-hero {
             display: grid !important;
@@ -500,98 +467,34 @@ async function init() {
           }
         }
 
+        /* PHONE: Photo, name, Personal Info, Biography, credits */
         @media (max-width: 767px) {
-  .person-hero {
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 18px !important;
-  }
+          .person-hero {
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+            gap: 18px !important;
+          }
 
-  .person-sidebar,
-  .person-main-column {
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .person-sidebar {
-    order: 1;
-  }
-
-  .person-large-photo {
-    display: block;
-    width: min(82%, 320px) !important;
-    height: auto !important;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-    margin: 0 auto !important;
-    border-radius: 12px;
-  }
-
-  .person-personal-info {
-    order: 3;
-    margin-top: 30px;
-  }
-
-  .person-main-column {
-    order: 2;
-  }
-
-  .person-bio {
-    order: 1;
-    width: 100%;
-    min-width: 0;
-  }
-
-  .person-bio > .detail-kicker {
-    display: none;
-  }
-
-  .person-profile-name {
-    text-align: center;
-    font-size: clamp(30px, 8vw, 44px) !important;
-    line-height: 1.12;
-    margin: 0 0 20px !important;
-    overflow-wrap: anywhere;
-  }
-
-  .person-biography-section {
-    margin-top: 30px;
-  }
-
-  .person-info-heading {
-    font-size: 28px;
-    margin-bottom: 18px;
-  }
-
-  .person-info-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px 18px;
-  }
-
-  .person-info-label {
-    font-size: 17px;
-  }
-
-  .person-info-value {
-    font-size: 16px;
-    line-height: 1.45;
-  }
-
+          .person-sidebar,
+          .person-main-column {
+            display: contents !important;
+          }
 
           .person-large-photo {
             display: block;
+            order: 1;
             width: min(82%, 320px) !important;
             height: auto !important;
             aspect-ratio: 1 / 1;
             object-fit: cover;
-            margin: 0 auto !important;
+            margin: 0 auto 8px !important;
             border-radius: 12px;
           }
 
           .person-bio {
+            display: block !important;
+            order: 2;
             width: 100%;
             min-width: 0;
           }
@@ -601,6 +504,7 @@ async function init() {
           }
 
           .person-profile-name {
+            order: 1;
             text-align: center;
             font-size: clamp(30px, 8vw, 44px) !important;
             line-height: 1.12;
@@ -609,11 +513,9 @@ async function init() {
           }
 
           .person-personal-info {
-            margin-top: 30px;
-          }
-
-          .person-biography-section {
-            margin-top: 30px;
+            order: 3;
+            margin-top: 8px;
+            min-width: 0;
           }
 
           .person-info-heading {
@@ -634,6 +536,16 @@ async function init() {
             font-size: 16px;
             line-height: 1.45;
           }
+
+          .person-biography-section {
+            order: 4;
+            margin-top: 22px;
+          }
+
+          .person-work-column {
+            order: 5;
+            min-width: 0;
+          }
         }
       `;
 
@@ -647,9 +559,7 @@ async function init() {
     ]);
 
     const knownFor = [...allKnown]
-      .sort((a, b) =>
-        (b.popularity || 0) - (a.popularity || 0)
-      )
+      .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
       .slice(0, 12);
 
     addCredits("Known For", knownFor, "known");
@@ -755,8 +665,7 @@ function addCredits(heading, items, mode) {
 
   items.forEach(item => {
     const type =
-      item.media_type === "tv" ||
-      item.first_air_date
+      item.media_type === "tv" || item.first_air_date
         ? "tv"
         : "movie";
 
@@ -793,24 +702,15 @@ function addCredits(heading, items, mode) {
 
       poster.onerror = () => {
         poster.onerror = null;
-
         poster.replaceWith(
-          el(
-            "div",
-            "credit-poster credit-placeholder",
-            "No poster"
-          )
+          el("div", "credit-poster credit-placeholder", "No poster")
         );
       };
 
       card.appendChild(poster);
     } else {
       card.appendChild(
-        el(
-          "div",
-          "credit-poster credit-placeholder",
-          "No poster"
-        )
+        el("div", "credit-poster credit-placeholder", "No poster")
       );
     }
 
