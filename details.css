@@ -174,6 +174,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
+}
 
 /* Crew profile images */
 .crew-grid {
@@ -232,6 +233,8 @@
   .crew-grid {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
+}
+
 /* TMDB-style biography paragraphs */
 .person-biography-section {
   min-width: 0;
