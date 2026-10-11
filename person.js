@@ -256,17 +256,21 @@ async function init() {
 
     addInfo("Stage Name", stageName);
     addInfo("Known For", person.known_for_department || "—");
+
     addInfo(
       "Known Credits",
       String(uniqueCredits([...allCast, ...allCrew]).length)
     );
+
     addInfo(
       "Gender",
       ({ 1: "Female", 2: "Male", 3: "Non-binary" })[
         person.gender
       ] || "—"
     );
+
     addInfo("Birthday", person.birthday || "—");
+
     addInfo(
       "Place of Birth",
       person.place_of_birth || "—",
@@ -279,47 +283,67 @@ async function init() {
 
     personalInfo.appendChild(infoGrid);
 
+    // BIOGRAPHY WITH READ MORE / READ LESS
     const biography = el("section", "person-biography-section");
 
-const bioHeading = el("h2", "detail-subtitle", "Biography");
-const bioText = el("div", "person-biography-text");
-
-const fullBiography = (person.biography || "No biography available.")
-  .trim()
-  .split(/\n\s*\n/)
-  .map(paragraph => paragraph.trim())
-  .filter(Boolean);
-
-fullBiography.forEach(paragraph => {
-  bioText.appendChild(
-    el("p", "detail-overview", paragraph)
-  );
-});
-
-const readMore = el("button", "bio-read-more", "Read More ›");
-readMore.type = "button";
-readMore.setAttribute("aria-expanded", "false");
-
-let expanded = false;
-
-readMore.addEventListener("click", () => {
-  expanded = !expanded;
-
-  bioText.classList.toggle("bio-collapsed", !expanded);
-
-  readMore.textContent = expanded ? "Read Less ↑" : "Read More ›";
-  readMore.setAttribute("aria-expanded", String(expanded));
-});
-
-biography.append(bioHeading, bioText);
-
-if ((person.biography || "").trim().length > 300) {
-  bioText.classList.add("bio-collapsed");
-  biography.appendChild(readMore);
-} else {
-  bioText.classList.remove("bio-collapsed");
-}
+    const bioHeading = el(
+      "h2",
+      "detail-subtitle",
+      "Biography"
     );
+
+    const bioText = el("div", "person-biography-text");
+
+    const biographySource = (
+      person.biography || "No biography available."
+    ).trim();
+
+    const fullBiography = biographySource
+      .split(/\n\s*\n/)
+      .map(paragraph => paragraph.trim())
+      .filter(Boolean);
+
+    fullBiography.forEach(paragraph => {
+      bioText.appendChild(
+        el("p", "detail-overview", paragraph)
+      );
+    });
+
+    const readMore = el(
+      "button",
+      "bio-read-more",
+      "Read More ›"
+    );
+
+    readMore.type = "button";
+    readMore.setAttribute("aria-expanded", "false");
+
+    let expanded = false;
+
+    readMore.addEventListener("click", () => {
+      expanded = !expanded;
+
+      bioText.classList.toggle(
+        "bio-collapsed",
+        !expanded
+      );
+
+      readMore.textContent = expanded
+        ? "Read Less ↑"
+        : "Read More ›";
+
+      readMore.setAttribute(
+        "aria-expanded",
+        String(expanded)
+      );
+    });
+
+    biography.append(bioHeading, bioText);
+
+    if (biographySource.length > 300) {
+      bioText.classList.add("bio-collapsed");
+      biography.appendChild(readMore);
+    }
 
     bio.appendChild(personalInfo);
     bio.appendChild(biography);
@@ -327,8 +351,7 @@ if ((person.biography || "").trim().length > 300) {
     profile.appendChild(bio);
     root.appendChild(profile);
 
-    // PHONE PROFILE STYLING
-    // Desktop styling remains unchanged.
+    // PROFILE STYLES
     if (!document.getElementById("person-mobile-profile-styles")) {
       const mobileStyles = el("style");
 
@@ -370,6 +393,31 @@ if ((person.biography || "").trim().length > 300) {
 
         .person-biography-section {
           margin-top: 26px;
+          min-width: 0;
+        }
+
+        .person-biography-text p {
+          margin: 0 0 18px;
+          line-height: 1.65;
+          white-space: pre-wrap;
+        }
+
+        .person-biography-text.bio-collapsed {
+          max-height: 220px;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .bio-read-more {
+          display: block;
+          margin: 6px 0 18px auto;
+          padding: 6px 0;
+          border: none;
+          background: transparent;
+          color: #01b4e4;
+          font: inherit;
+          font-weight: 600;
+          cursor: pointer;
         }
 
         @media (max-width: 767px) {
