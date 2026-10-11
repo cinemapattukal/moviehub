@@ -281,13 +281,44 @@ async function init() {
 
     const biography = el("section", "person-biography-section");
 
-    biography.append(
-      el("h2", "detail-subtitle", "Biography"),
-      el(
-        "p",
-        "detail-overview",
-        person.biography || "No biography available."
-      )
+const bioHeading = el("h2", "detail-subtitle", "Biography");
+const bioText = el("div", "person-biography-text");
+
+const fullBiography = (person.biography || "No biography available.")
+  .trim()
+  .split(/\n\s*\n/)
+  .map(paragraph => paragraph.trim())
+  .filter(Boolean);
+
+fullBiography.forEach(paragraph => {
+  bioText.appendChild(
+    el("p", "detail-overview", paragraph)
+  );
+});
+
+const readMore = el("button", "bio-read-more", "Read More ›");
+readMore.type = "button";
+readMore.setAttribute("aria-expanded", "false");
+
+let expanded = false;
+
+readMore.addEventListener("click", () => {
+  expanded = !expanded;
+
+  bioText.classList.toggle("bio-collapsed", !expanded);
+
+  readMore.textContent = expanded ? "Read Less ↑" : "Read More ›";
+  readMore.setAttribute("aria-expanded", String(expanded));
+});
+
+biography.append(bioHeading, bioText);
+
+if ((person.biography || "").trim().length > 300) {
+  bioText.classList.add("bio-collapsed");
+  biography.appendChild(readMore);
+} else {
+  bioText.classList.remove("bio-collapsed");
+}
     );
 
     bio.appendChild(personalInfo);
