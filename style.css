@@ -134,3 +134,88 @@ footer p { font-size: 12px; line-height: 1.6; }
  .person-large-photo { width:115px; max-width:36%; }
 }
 
+
+
+/* MovieHub shared search on Movie, TV and Person pages */
+.global-search-wrap {
+  position: relative;
+  margin-left: auto;
+  width: min(340px, 38%);
+  min-width: 190px;
+  z-index: 20;
+}
+#global-search {
+  display: block;
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid #354155;
+  color: #fff;
+  padding: 12px 15px;
+  border-radius: 25px;
+  outline: none;
+  font: inherit;
+  font-size: 14px;
+}
+#global-search:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px #60a5fa22;
+}
+.global-search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(420px, 88vw);
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  background: #151e2c;
+  border: 1px solid #354155;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px #0008;
+}
+.global-search-results[hidden] { display: none !important; }
+.global-search-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid #283244;
+  background: transparent;
+  color: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+}
+.global-search-item:last-child { border-bottom: 0; }
+.global-search-item:hover,
+.global-search-item:focus {
+  background: #253247;
+  outline: none;
+}
+.global-search-thumb {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 58px;
+  object-fit: cover;
+  border-radius: 5px;
+  background: #202b3c;
+}
+.global-search-thumb.no-image {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 10px;
+}
+.global-search-copy { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.global-search-copy strong { font-size: 14px; overflow-wrap: anywhere; }
+.global-search-copy span { color: var(--muted); font-size: 12px; }
+.global-search-message { padding: 14px; color: var(--muted); font-size: 13px; }
+@media (max-width: 800px) {
+  .global-search-wrap {
+    order: 2;
+    margin-left: auto;
+    width: 100%;
+    min-width: 0;
+  }
+  #global-search { width: 100%; }
+}
