@@ -355,7 +355,12 @@ function addCredits(heading, items, mode) {
 
   root.appendChild(el("h2", "content-heading", heading));
 
-  const grid = el("div", "credit-grid");
+  const grid = el(
+  "div",
+  mode === "known"
+    ? "credit-grid known-for-slider"
+    : "credit-grid"
+);
   const seen = new Set();
 
   items.forEach(item => {
