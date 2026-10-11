@@ -63,6 +63,10 @@
       <a href="./#movies">Movies</a>
       <a href="./#people">People</a>
     </nav>
+    <div class="global-search-wrap">
+      <input id="global-search" type="search" placeholder="Search movies, series, people..." autocomplete="off" aria-label="Search movies, series and people">
+      <div id="global-search-results" class="global-search-results" role="listbox" hidden></div>
+    </div>
   </header>
 
   <main class="detail-page">
@@ -87,6 +91,7 @@
     </p>
   </footer>
 
+  <script src="global-search.js"></script>
   <script src="person.js"></script>
 </body>
 </html>
