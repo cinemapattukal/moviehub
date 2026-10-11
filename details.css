@@ -174,4 +174,63 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
   }
+
+/* Crew profile images */
+.crew-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
 }
+
+.crew-card {
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border: 1px solid #283244;
+  border-radius: 10px;
+  background: #151e2c;
+}
+
+.crew-photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  background: #202b3c;
+}
+
+.image-placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 100px;
+  color: #a5b0c2;
+  font-size: 12px;
+  text-align: center;
+}
+
+.crew-name,
+.crew-job {
+  margin: 7px 8px 0;
+  overflow-wrap: anywhere;
+}
+
+.crew-name {
+  color: #fff;
+  font-size: 13px;
+}
+
+.crew-job {
+  margin-bottom: 10px;
+  color: #a5b0c2;
+  font-size: 12px;
+}
+
+@media (min-width: 1000px) {
+  .crew-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
