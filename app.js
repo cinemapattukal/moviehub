@@ -6,8 +6,6 @@ const grid = document.getElementById("grid");
 const search = document.getElementById("search");
 const category = document.getElementById("category");
 const statusBox = document.getElementById("status");
-const actorsGrid = document.getElementById("actors-grid");
-const actorsStatus = document.getElementById("actors-status");
 
 let page = 1;
 let totalPages = 1;
@@ -35,81 +33,6 @@ async function getJSON(url) {
   const data = await res.json();
   if (data.error) throw new Error(data.error);
   return data;
-}
-
-async function loadDiscoverActors() {
-  if (!actorsGrid) return;
-
-  actorsGrid.replaceChildren();
-  if (actorsStatus) actorsStatus.textContent = "Loading actors...";
-
-  try {
-    const url = new URL(API + "/api/actors/popular");
-    url.searchParams.set("page", "1");
-    url.searchParams.set("language", "en-US");
-
-    const data = await getJSON(url.toString());
-    const people = (data.results || []).slice(0, 10);
-    const fragment = document.createDocumentFragment();
-
-    people.forEach(person => {
-      const card = document.createElement("article");
-      card.className = "movie actor-card";
-      card.tabIndex = 0;
-      card.setAttribute("role", "link");
-      card.setAttribute("aria-label", "View " + (person.name || "actor") + " profile");
-
-      const photo = document.createElement("img");
-      photo.className = "poster actor-poster";
-      photo.loading = "lazy";
-      photo.alt = (person.name || "Actor") + " profile photo";
-
-      if (person.profile_path) {
-        photo.src = imageOf(person.profile_path, "w500");
-        photo.onerror = () => {
-          photo.onerror = null;
-          photo.removeAttribute("src");
-          photo.classList.add("poster-missing");
-          photo.alt = "Image unavailable";
-        };
-      } else {
-        photo.classList.add("poster-missing");
-      }
-
-      const name = document.createElement("h3");
-      name.textContent = person.name || "Unknown person";
-
-      const knownFor = document.createElement("p");
-      knownFor.textContent = person.known_for_department || "Actor";
-
-      card.append(photo, name, knownFor);
-
-      const openProfile = () => {
-        location.href = `person.html?id=${encodeURIComponent(person.id)}`;
-      };
-      card.addEventListener("click", openProfile);
-      card.addEventListener("keydown", event => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          openProfile();
-        }
-      });
-
-      fragment.appendChild(card);
-    });
-
-    actorsGrid.appendChild(fragment);
-    if (actorsStatus) {
-      actorsStatus.textContent = people.length
-        ? "Popular actors and people"
-        : "No actors are available right now.";
-    }
-  } catch (error) {
-    console.error("MovieHub actor list error:", error);
-    if (actorsStatus) {
-      actorsStatus.textContent = "Could not load actors. Please refresh and try again.";
-    }
-  }
 }
 
 async function loadTitles() {
@@ -265,4 +188,3 @@ document.querySelectorAll("nav a, .explore").forEach(a => {
 });
 
 loadTitles();
-loadDiscoverActors();
